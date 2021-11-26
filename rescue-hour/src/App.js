@@ -1,17 +1,23 @@
 import logo from './logo.svg';
 import './App.css';
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Route, NavLink } from 'react-router-dom';
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
-import {Switch} from 'react-router-dom';
-import Login from './login';
-import Home from './home';
 import { LinkContainer } from "react-router-bootstrap";
-import NotFound from "./notFound";
-
+import { AppContext } from "./lib/contextLib";
+import Routes from "./components/routes";
+import { useHistory } from "react-router-dom";
 
 function App() { 
+  const [isAuthenticated, userHasAuthenticated] = useState(false);
+  const history = useHistory();
+
+  function handleLogout() {
+    userHasAuthenticated(false);
+    history.push("/login");
+  }
+
   return (
     <div className="App">
       <BrowserRouter>
@@ -28,24 +34,26 @@ function App() {
               <Navbar.Toggle />
               <Navbar.Collapse className="justify-content-end">
                 <Nav activeKey={window.location.pathname}>
-                  <LinkContainer to="/signup">
-                    <Nav.Link>Signup</Nav.Link>
-                  </LinkContainer>
-                  <LinkContainer to="/login">
-                    <Nav.Link>Login</Nav.Link>
-                  </LinkContainer>
+                {isAuthenticated ? (
+                  <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
+                ) : (
+                  <>
+                    <LinkContainer to="/signup">
+                      <Nav.Link>Signup</Nav.Link>
+                    </LinkContainer>
+                    <LinkContainer to="/login">
+                      <Nav.Link>Login</Nav.Link>
+                    </LinkContainer>
+                  </>
+                )}
                 </Nav>
               </Navbar.Collapse>
             </Navbar>
           </div>
           <div className="content">
-            <Switch>
-              <Route exact path="/" component={Home} />
-              <Route path="/login" component={Login} />
-              <Route>
-                <NotFound />
-              </Route>
-            </Switch>
+          <AppContext.Provider value={{ isAuthenticated, userHasAuthenticated }}>
+            <Routes />
+          </AppContext.Provider>
           </div>
         </div>
       </BrowserRouter>
